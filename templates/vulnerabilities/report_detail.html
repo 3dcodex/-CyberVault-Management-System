@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ report.title }} — CyberVault{% endblock %}
+{% block page_title %}Report Detail{% endblock %}
+
+{% block extra_css %}
+<style>
+  .detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .detail-field { }
+  .detail-label {
+    font-size: .75rem;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: #484f58;
+    margin-bottom: .3rem;
+  }
+  .detail-value { color: #e6edf3; font-size: .95rem; }
+  .description-block {
+    background: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    color: #c9d1d9;
+    font-size: .9rem;
+    line-height: 1.65;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .action-bar {
+    display: flex;
+    gap: .75rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #30363d;
+    margin-top: 1.5rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="max-width:760px;">
+  <div style="margin-bottom:1.25rem;">
+    <a href="{% url 'vulnerabilities:report_list' %}" class="btn btn-ghost btn-sm">
+      &larr; Back to Reports
+    </a>
+  </div>
+
+  <div class="card">
+    <!-- Title + badges -->
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;margin-bottom:1.5rem;">
+      <h1 style="font-size:1.25rem;font-weight:700;color:#e6edf3;line-height:1.3;">
+        {{ report.title }}
+      </h1>
+      <div style="display:flex;gap:.5rem;flex-shrink:0;">
+        {% if report.severity == 'Critical' %}
+          <span class="badge badge-red">Critical</span>
+        {% elif report.severity == 'High' %}
+          <span class="badge badge-orange">High</span>
+        {% elif report.severity == 'Medium' %}
+          <span class="badge badge-yellow">Medium</span>
+        {% else %}
+          <span class="badge badge-green">Low</span>
+        {% endif %}
+
+        {% if report.status == 'Open' %}
+          <span class="badge badge-red">Open</span>
+        {% elif report.status == 'In Progress' %}
+          <span class="badge badge-yellow">In Progress</span>
+        {% else %}
+          <span class="badge badge-green">Fixed</span>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Meta grid -->
+    <div class="detail-grid">
+      <div class="detail-field">
+        <div class="detail-label">Affected System</div>
+        <div class="detail-value">{{ report.affected_system }}</div>
+      </div>
+      <div class="detail-field">
+        <div class="detail-label">Reporter</div>
+        <div class="detail-value">{{ report.reporter.username }}</div>
+      </div>
+      <div class="detail-field">
+        <div class="detail-label">Submitted</div>
+        <div class="detail-value">{{ report.created_at|date:"N j, Y, g:i a" }}</div>
+      </div>
+      <div class="detail-field">
+        <div class="detail-label">Severity</div>
+        <div class="detail-value">{{ report.severity }}</div>
+      </div>
+    </div>
+
+    <hr class="divider">
+
+    <!-- Description -->
+    <div style="margin-bottom:1.25rem;">
+      <div class="detail-label" style="margin-bottom:.6rem;">Description</div>
+      <div class="description-block">{{ report.description }}</div>
+    </div>
+
+    <!-- Actions -->
+    {% if can_modify %}
+    <div class="action-bar">
+      <a href="{% url 'vulnerabilities:report_edit' report.pk %}" class="btn btn-ghost">Edit Report</a>
+      <a href="{% url 'vulnerabilities:report_delete' report.pk %}" class="btn btn-danger">Delete</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

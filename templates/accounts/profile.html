@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% block title %}Profile — CyberVault{% endblock %}
+{% block page_title %}Profile{% endblock %}
+
+{% block content %}
+<div style="max-width:580px;">
+
+  <div class="card" style="margin-bottom:1rem;">
+    <div style="display:flex;align-items:center;gap:1.25rem;margin-bottom:1.5rem;">
+      <div style="width:56px;height:56px;border-radius:50%;
+                  background:var(--accent-glow-md);border:2px solid var(--accent-dim);
+                  display:flex;align-items:center;justify-content:center;
+                  font-size:1.4rem;font-weight:700;color:var(--accent);
+                  text-transform:uppercase;flex-shrink:0;
+                  box-shadow:0 0 18px var(--accent-glow);">
+        {{ user.username|first }}
+      </div>
+      <div>
+        <p style="font-size:1.1rem;font-weight:700;color:var(--text-1);
+                  font-family:'JetBrains Mono',monospace;">{{ user.username }}</p>
+        <div style="display:flex;gap:.5rem;margin-top:.35rem;">
+          {% if user.is_superuser %}
+            <span class="badge badge-purple">Superuser</span>
+          {% elif user.is_staff %}
+            <span class="badge badge-green">Admin</span>
+          {% else %}
+            <span class="badge badge-grey">Member</span>
+          {% endif %}
+          {% if user.is_active %}
+            <span class="badge badge-green">Active</span>
+          {% else %}
+            <span class="badge badge-red">Inactive</span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+      <div style="background:var(--bg-elevated);border:1px solid var(--border);
+                  border-radius:var(--radius-sm);padding:.9rem 1rem;">
+        <p style="font-size:.68rem;font-family:'JetBrains Mono',monospace;
+                  text-transform:uppercase;letter-spacing:.1em;color:var(--text-3);
+                  margin-bottom:.35rem;">Email</p>
+        <p style="color:var(--text-1);font-size:.875rem;">{{ user.email|default:"—" }}</p>
+      </div>
+      <div style="background:var(--bg-elevated);border:1px solid var(--border);
+                  border-radius:var(--radius-sm);padding:.9rem 1rem;">
+        <p style="font-size:.68rem;font-family:'JetBrains Mono',monospace;
+                  text-transform:uppercase;letter-spacing:.1em;color:var(--text-3);
+                  margin-bottom:.35rem;">Member Since</p>
+        <p style="color:var(--text-1);font-size:.875rem;">{{ user.date_joined|date:"N j, Y" }}</p>
+      </div>
+      <div style="background:var(--bg-elevated);border:1px solid var(--border);
+                  border-radius:var(--radius-sm);padding:.9rem 1rem;">
+        <p style="font-size:.68rem;font-family:'JetBrains Mono',monospace;
+                  text-transform:uppercase;letter-spacing:.1em;color:var(--text-3);
+                  margin-bottom:.35rem;">Last Login</p>
+        <p style="color:var(--text-1);font-size:.875rem;">
+          {% if user.last_login %}{{ user.last_login|date:"N j, Y, g:i a" }}{% else %}—{% endif %}
+        </p>
+      </div>
+      <div style="background:var(--bg-elevated);border:1px solid var(--border);
+                  border-radius:var(--radius-sm);padding:.9rem 1rem;">
+        <p style="font-size:.68rem;font-family:'JetBrains Mono',monospace;
+                  text-transform:uppercase;letter-spacing:.1em;color:var(--text-3);
+                  margin-bottom:.35rem;">User ID</p>
+        <p style="color:var(--text-2);font-size:.875rem;font-family:'JetBrains Mono',monospace;">
+          #{{ user.pk }}
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <a href="{% url 'dashboard' %}" class="btn btn-ghost btn-sm">&larr; Dashboard</a>
+</div>
+{% endblock %}

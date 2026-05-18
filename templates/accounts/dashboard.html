@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard — CyberVault{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:1.75rem;">
+  <div>
+    <h2 class="page-title" style="margin-bottom:.25rem;">Welcome back,
+      <span style="color:var(--accent);font-family:'JetBrains Mono',monospace;">{{ user.username }}</span>
+    </h2>
+    <p class="small">System status: <span style="color:var(--green);">&#9679; All systems operational</span></p>
+  </div>
+</div>
+
+<div class="stat-grid">
+  <div class="stat-card">
+    <div class="stat-icon accent">&#128274;</div>
+    <div>
+      <div class="stat-number">{{ total_passwords }}</div>
+      <div class="stat-label">Saved Passwords</div>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon red">&#9888;</div>
+    <div>
+      <div class="stat-number">{{ open_vulns }}</div>
+      <div class="stat-label">Open Vulns</div>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon green">&#10003;</div>
+    <div>
+      <div class="stat-number">{{ fixed_vulns }}</div>
+      <div class="stat-label">Fixed Vulns</div>
+    </div>
+  </div>
+
+  {% if total_users is not None %}
+  <div class="stat-card">
+    <div class="stat-icon purple">&#128100;</div>
+    <div>
+      <div class="stat-number">{{ total_users }}</div>
+      <div class="stat-label">Active Users</div>
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+
+  <div class="card" style="position:relative;overflow:hidden;">
+    <div style="position:absolute;top:0;left:0;right:0;height:2px;
+                background:linear-gradient(90deg,transparent,var(--accent),transparent);"></div>
+    <p class="card-title">&#128274; Password Vault</p>
+    <p class="text-muted" style="font-size:.85rem;line-height:1.6;margin-bottom:1.25rem;">
+      Securely store, manage, and retrieve your site credentials.
+    </p>
+    <a href="{% url 'vault:credential_list' %}" class="btn btn-primary btn-sm">Open Vault</a>
+  </div>
+
+  <div class="card" style="position:relative;overflow:hidden;">
+    <div style="position:absolute;top:0;left:0;right:0;height:2px;
+                background:linear-gradient(90deg,transparent,var(--blue),transparent);"></div>
+    <p class="card-title">&#9888; Vulnerability Reports</p>
+    <p class="text-muted" style="font-size:.85rem;line-height:1.6;margin-bottom:1.25rem;">
+      Track, triage, and resolve security vulnerability reports.
+    </p>
+    <a href="{% url 'vulnerabilities:report_list' %}" class="btn btn-blue btn-sm">View Reports</a>
+  </div>
+
+</div>
+{% endblock %}

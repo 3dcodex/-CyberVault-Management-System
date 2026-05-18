@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ action }} Report — CyberVault{% endblock %}
+{% block page_title %}{{ action }} Vulnerability Report{% endblock %}
+
+{% block content %}
+<div style="max-width:640px;">
+  <div style="margin-bottom:1.25rem;">
+    {% if action == 'Edit' %}
+      <a href="{% url 'vulnerabilities:report_detail' report.pk %}" class="btn btn-ghost btn-sm">
+        &larr; Back to Report
+      </a>
+    {% else %}
+      <a href="{% url 'vulnerabilities:report_list' %}" class="btn btn-ghost btn-sm">
+        &larr; Back to Reports
+      </a>
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <p class="card-title">
+      {% if action == 'Edit' %}
+        Edit — {{ report.title }}
+      {% else %}
+        Submit Vulnerability Report
+      {% endif %}
+    </p>
+
+    <form method="post" novalidate>
+      {% csrf_token %}
+
+      <div class="form-group">
+        <label for="{{ form.title.id_for_label }}">Title</label>
+        {{ form.title }}
+        {% if form.title.errors %}
+          <div class="field-errors">{{ form.title.errors.as_text }}</div>
+        {% endif %}
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+        <div class="form-group">
+          <label for="{{ form.severity.id_for_label }}">Severity</label>
+          {{ form.severity }}
+          {% if form.severity.errors %}
+            <div class="field-errors">{{ form.severity.errors.as_text }}</div>
+          {% endif %}
+        </div>
+
+        {% if form.status %}
+        <div class="form-group">
+          <label for="{{ form.status.id_for_label }}">
+            Status
+            <span style="color:#3fb950;font-size:.75rem;margin-left:.3rem;">&#9679; Admin</span>
+          </label>
+          {{ form.status }}
+          {% if form.status.errors %}
+            <div class="field-errors">{{ form.status.errors.as_text }}</div>
+          {% endif %}
+        </div>
+        {% endif %}
+      </div>
+
+      <div class="form-group">
+        <label for="{{ form.affected_system.id_for_label }}">Affected System</label>
+        {{ form.affected_system }}
+        {% if form.affected_system.errors %}
+          <div class="field-errors">{{ form.affected_system.errors.as_text }}</div>
+        {% endif %}
+      </div>
+
+      <div class="form-group">
+        <label for="{{ form.description.id_for_label }}">Description</label>
+        {{ form.description }}
+        <div class="text-muted" style="font-size:.75rem;margin-top:.3rem;">
+          Include steps to reproduce, impact, and any supporting details.
+        </div>
+        {% if form.description.errors %}
+          <div class="field-errors">{{ form.description.errors.as_text }}</div>
+        {% endif %}
+      </div>
+
+      <div style="display:flex;gap:.75rem;margin-top:1.5rem;">
+        <button type="submit" class="btn btn-primary">
+          {% if action == 'Edit' %}Save Changes{% else %}Submit Report{% endif %}
+        </button>
+        {% if action == 'Edit' %}
+          <a href="{% url 'vulnerabilities:report_detail' report.pk %}" class="btn btn-ghost">Cancel</a>
+        {% else %}
+          <a href="{% url 'vulnerabilities:report_list' %}" class="btn btn-ghost">Cancel</a>
+        {% endif %}
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
