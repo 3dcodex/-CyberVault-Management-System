@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block title %}Delete Report — CyberVault{% endblock %}
+{% block page_title %}Delete Report{% endblock %}
+
+{% block content %}
+<div style="max-width:500px;">
+  <div class="card" style="border-color:#da3633;">
+    <p class="card-title" style="color:#f85149;">&#9888; Confirm Deletion</p>
+
+    <p style="margin-bottom:.75rem;">
+      You are about to permanently delete this vulnerability report:
+    </p>
+
+    <div style="background:#0d1117;border:1px solid #30363d;border-radius:8px;
+                padding:1rem 1.25rem;margin-bottom:1.5rem;">
+      <div style="margin-bottom:.75rem;">
+        <span class="text-muted" style="font-size:.78rem;">Title</span>
+        <p style="color:#e6edf3;font-weight:600;margin-top:.15rem;">{{ report.title }}</p>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;">
+        <div>
+          <span class="text-muted" style="font-size:.78rem;">Severity</span>
+          <p style="margin-top:.15rem;">
+            {% if report.severity == 'Critical' %}
+              <span class="badge badge-red">Critical</span>
+            {% elif report.severity == 'High' %}
+              <span class="badge badge-orange">High</span>
+            {% elif report.severity == 'Medium' %}
+              <span class="badge badge-yellow">Medium</span>
+            {% else %}
+              <span class="badge badge-green">Low</span>
+            {% endif %}
+          </p>
+        </div>
+        <div>
+          <span class="text-muted" style="font-size:.78rem;">Reporter</span>
+          <p style="color:#c9d1d9;margin-top:.15rem;">{{ report.reporter.username }}</p>
+        </div>
+      </div>
+    </div>
+
+    <p class="text-muted" style="font-size:.85rem;margin-bottom:1.5rem;">
+      This action cannot be undone.
+    </p>
+
+    <form method="post">
+      {% csrf_token %}
+      <div style="display:flex;gap:.75rem;">
+        <button type="submit" class="btn btn-danger">Yes, Delete</button>
+        <a href="{% url 'vulnerabilities:report_detail' report.pk %}" class="btn btn-ghost">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

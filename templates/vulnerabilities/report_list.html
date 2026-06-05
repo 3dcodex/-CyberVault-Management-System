@@ -1,0 +1,169 @@
+{% extends 'base.html' %}
+
+{% block title %}Vulnerability Reports — CyberVault{% endblock %}
+{% block page_title %}Vulnerability Reports{% endblock %}
+
+{% block extra_css %}
+<style>
+  .filter-bar {
+    display: flex;
+    gap: .6rem;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+  }
+  .filter-bar label { font-size: .8rem; color: #8b949e; margin: 0; }
+  .filter-select {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    color: #c9d1d9;
+    padding: .4rem .75rem;
+    font-size: .85rem;
+    cursor: pointer;
+    outline: none;
+  }
+  .filter-select:focus { border-color: #58a6ff; }
+  .filter-btn {
+    background: #21262d;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    color: #c9d1d9;
+    padding: .4rem .9rem;
+    font-size: .85rem;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .filter-btn:hover { background: #30363d; text-decoration: none; }
+  .list-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+  .empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: #484f58;
+  }
+  .empty-state .empty-icon { font-size: 3rem; margin-bottom: 1rem; }
+  .empty-state p { margin-bottom: 1.25rem; }
+  .title-link { color: #e6edf3; text-decoration: none; font-weight: 600; }
+  .title-link:hover { color: #58a6ff; text-decoration: none; }
+  .reporter-cell { font-size: .82rem; color: #8b949e; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="list-header">
+  <p class="page-title" style="margin-bottom:0;">
+    &#9888; Reports
+    <span style="font-size:.875rem;font-weight:400;color:#8b949e;margin-left:.5rem;">
+      {{ reports.count }} total
+    </span>
+  </p>
+  <a href="{% url 'vulnerabilities:report_add' %}" class="btn btn-primary">+ Submit Report</a>
+</div>
+
+<div class="filter-bar">
+  <form method="get" style="display:flex;gap:.6rem;align-items:center;flex-wrap:wrap;">
+    <label>Severity</label>
+    <select name="severity" class="filter-select" onchange="this.form.submit()">
+      <option value="">All</option>
+      {% for val, label in severity_choices %}
+        <option value="{{ val }}" {% if severity_filter == val %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+
+    <label style="margin-left:.5rem;">Status</label>
+    <select name="status" class="filter-select" onchange="this.form.submit()">
+      <option value="">All</option>
+      {% for val, label in status_choices %}
+        <option value="{{ val }}" {% if status_filter == val %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+
+    {% if severity_filter or status_filter %}
+      <a href="{% url 'vulnerabilities:report_list' %}" class="filter-btn">&#10005; Clear</a>
+    {% endif %}
+  </form>
+</div>
+
+{% if reports %}
+<div class="card" style="padding:0;overflow:hidden;">
+  <table>
+    <thead>
+      <tr>
+        <th>Title</th>
+        <th>Severity</th>
+        <th>Affected System</th>
+        <th>Status</th>
+        <th>Reporter</th>
+        <th>Date</th>
+        <th style="text-align:right;">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for report in reports %}
+      <tr>
+        <td>
+          <a href="{% url 'vulnerabilities:report_detail' report.pk %}" class="title-link">
+            {{ report.title }}
+          </a>
+        </td>
+        <td>
+          {% if report.severity == 'Critical' %}
+            <span class="badge badge-red">Critical</span>
+          {% elif report.severity == 'High' %}
+            <span class="badge badge-orange">High</span>
+          {% elif report.severity == 'Medium' %}
+            <span class="badge badge-yellow">Medium</span>
+          {% else %}
+            <span class="badge badge-green">Low</span>
+          {% endif %}
+        </td>
+        <td style="font-size:.875rem;">{{ report.affected_system }}</td>
+        <td>
+          {% if report.status == 'Open' %}
+            <span class="badge badge-red">Open</span>
+          {% elif report.status == 'In Progress' %}
+            <span class="badge badge-yellow">In Progress</span>
+          {% else %}
+            <span class="badge badge-green">Fixed</span>
+          {% endif %}
+        </td>
+        <td class="reporter-cell">{{ report.reporter.username }}</td>
+        <td style="color:#8b949e;font-size:.82rem;white-space:nowrap;">
+          {{ report.created_at|date:"M j, Y" }}
+        </td>
+        <td style="text-align:right;white-space:nowrap;">
+          <a href="{% url 'vulnerabilities:report_detail' report.pk %}"
+             class="btn btn-ghost btn-sm">View</a>
+          {% if user.is_staff or report.reporter == user %}
+            <a href="{% url 'vulnerabilities:report_edit' report.pk %}"
+               class="btn btn-ghost btn-sm" style="margin-left:.3rem;">Edit</a>
+            <a href="{% url 'vulnerabilities:report_delete' report.pk %}"
+               class="btn btn-danger btn-sm" style="margin-left:.3rem;">Delete</a>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% else %}
+<div class="card empty-state">
+  <div class="empty-icon">&#9888;</div>
+  <p class="text-muted">
+    {% if severity_filter or status_filter %}
+      No reports match the current filters.
+    {% else %}
+      No vulnerability reports yet.
+    {% endif %}
+  </p>
+  <a href="{% url 'vulnerabilities:report_add' %}" class="btn btn-primary">Submit first report</a>
+</div>
+{% endif %}
+
+{% endblock %}
