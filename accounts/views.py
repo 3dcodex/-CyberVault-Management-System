@@ -3,6 +3,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User
 from django.contrib import messages
+from django.core.cache import cache
 from django.core.exceptions import PermissionDenied
 from django.db.models import Count
 from django.utils.http import url_has_allowed_host_and_scheme
@@ -10,6 +11,14 @@ from django.views.decorators.http import require_POST
 from vault.models import Credential
 from vulnerabilities.models import VulnerabilityReport
 from .forms import RegisterForm
+
+_MAX_LOGIN_ATTEMPTS = 5
+_LOCKOUT_SECONDS    = 300  # 5 minutes
+
+
+def _get_client_ip(request):
+    forwarded = request.META.get('HTTP_X_FORWARDED_FOR', '')
+    return forwarded.split(',')[0].strip() if forwarded else request.META.get('REMOTE_ADDR', '')
 
 staff_required = user_passes_test(lambda u: u.is_staff, login_url='/accounts/login/')
 
@@ -35,15 +44,26 @@ def login_view(request):
     if request.user.is_authenticated:
         return redirect('dashboard')
     if request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password')
+        username = request.POST.get('username', '').strip()
+        password = request.POST.get('password', '')
+        ip       = _get_client_ip(request)
+        cache_key = f'login_fail_{ip}'
+        attempts  = cache.get(cache_key, 0)
+
+        if attempts >= _MAX_LOGIN_ATTEMPTS:
+            messages.error(request, 'Too many failed attempts. Please wait 5 minutes before trying again.')
+            return render(request, 'accounts/login.html')
+
         user = authenticate(request, username=username, password=password)
         if user is not None:
+            cache.delete(cache_key)
             login(request, user)
             next_url = request.POST.get('next') or request.GET.get('next', '')
             if next_url and url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
                 return redirect(next_url)
             return redirect('dashboard')
+
+        cache.set(cache_key, attempts + 1, _LOCKOUT_SECONDS)
         messages.error(request, 'Invalid username or password.')
     return render(request, 'accounts/login.html')
 

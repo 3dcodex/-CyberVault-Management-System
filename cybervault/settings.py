@@ -165,23 +165,24 @@ CORS_ALLOWED_ORIGIN_REGEXES = [
     r"^chrome-extension://.*$",
 ]
 
-# ── Production-only settings (not set here — require HTTPS + real deployment) ──
-# SECURE_SSL_REDIRECT        = True
-# SECURE_HSTS_SECONDS        = 31536000
-# SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-# SESSION_COOKIE_SECURE      = True
-# CSRF_COOKIE_SECURE         = True
-# SECRET_KEY                 = os.environ['DJANGO_SECRET_KEY']  # replace insecure default
-# DEBUG                      = False
-# ALLOWED_HOSTS              = ['yourdomain.com']
-
 # ── Security headers ───────────────────────────────────────────────────────────
-SECURE_CONTENT_TYPE_NOSNIFF = True   # Prevent MIME-type sniffing
-X_FRAME_OPTIONS             = 'DENY' # Deny embedding in iframes (clickjacking)
-SECURE_BROWSER_XSS_FILTER   = True   # Legacy IE XSS filter header
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS             = 'DENY'
+SECURE_BROWSER_XSS_FILTER   = True
 
 # ── Session hardening ──────────────────────────────────────────────────────────
-SESSION_COOKIE_HTTPONLY = True   # JS cannot read the session cookie
-SESSION_COOKIE_SAMESITE = 'Lax' # CSRF mitigation for cross-site requests
-SESSION_COOKIE_AGE      = 7200  # Auto-expire session after 2 hours of inactivity
-CSRF_COOKIE_HTTPONLY    = True   # JS cannot read the CSRF cookie
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_AGE      = 7200
+CSRF_COOKIE_HTTPONLY    = True
+
+# ── Production hardening (active when DEBUG=False) ─────────────────────────────
+if not DEBUG:
+    # Railway terminates SSL at the proxy — trust the forwarded proto header
+    SECURE_PROXY_SSL_HEADER        = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SECURE_SSL_REDIRECT            = True
+    SECURE_HSTS_SECONDS            = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD            = True
+    SESSION_COOKIE_SECURE          = True
+    CSRF_COOKIE_SECURE             = True
