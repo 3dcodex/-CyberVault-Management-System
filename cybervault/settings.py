@@ -23,7 +23,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY')
 DEBUG = config('DEBUG', default=False, cast=bool)
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='127.0.0.1,localhost', cast=Csv())
-CSRF_TRUSTED_ORIGINS = config('CSRF_TRUSTED_ORIGINS', default='http://127.0.0.1,http://localhost', cast=Csv())
+CSRF_TRUSTED_ORIGINS = config(
+    'CSRF_TRUSTED_ORIGINS',
+    default='http://127.0.0.1,http://localhost',
+    cast=Csv(),
+)
 
 
 # Application definition
@@ -82,17 +86,26 @@ WSGI_APPLICATION = 'cybervault.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
-
 _database_url = config('DATABASE_URL', default=None)
 if _database_url:
     import dj_database_url
-    DATABASES['default'] = dj_database_url.parse(_database_url, conn_max_age=600)
+    DATABASES = {
+        'default': dj_database_url.parse(_database_url, conn_max_age=600)
+    }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
+    import warnings
+    warnings.warn(
+        'DATABASE_URL is not set — using SQLite. '
+        'SQLite is not suitable for production (ephemeral on Railway).',
+        RuntimeWarning,
+        stacklevel=2,
+    )
 
 
 # Password validation
@@ -142,6 +155,16 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# ── Cache ──────────────────────────────────────────────────────────────────────
+# Database cache is shared across all gunicorn workers so login rate-limiting
+# state is consistent regardless of how many workers Railway runs.
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'cv_cache_table',
+    }
+}
+
 LOGIN_URL = '/accounts/login/'
 LOGIN_REDIRECT_URL = '/accounts/dashboard/'
 LOGOUT_REDIRECT_URL = '/accounts/login/'
@@ -150,7 +173,12 @@ LOGOUT_REDIRECT_URL = '/accounts/login/'
 # In production: load from environment variable and never commit the real key.
 #   import os; CREDENTIAL_ENCRYPTION_KEY = os.environ['CREDENTIAL_ENCRYPTION_KEY']
 # Generate a key: python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
-CREDENTIAL_ENCRYPTION_KEY = config('CREDENTIAL_ENCRYPTION_KEY')
+CREDENTIAL_ENCRYPTION_KEY = config('CREDENTIAL_ENCRYPTION_KEY', default=None)
+if not CREDENTIAL_ENCRYPTION_KEY:
+    raise RuntimeError(
+        'CREDENTIAL_ENCRYPTION_KEY environment variable is not set. '
+        'Generate one with: python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"'
+    )
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [

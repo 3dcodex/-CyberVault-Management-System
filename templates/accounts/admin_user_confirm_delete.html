@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}Delete User — CyberVault{% endblock %}
+{% block page_title %}Delete User{% endblock %}
+
+{% block content %}
+<div style="max-width:480px;margin:0 auto;">
+  <div class="card" style="position:relative;overflow:hidden;">
+    <div style="position:absolute;top:0;left:0;right:0;height:2px;
+                background:linear-gradient(90deg,transparent,var(--red),transparent);"></div>
+
+    <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1.25rem;">
+      <div class="stat-icon red" style="width:40px;height:40px;font-size:1rem;">&#9888;</div>
+      <div>
+        <p class="card-title" style="margin-bottom:.15rem;color:var(--red);">Confirm Deletion</p>
+        <p class="small">This action is permanent and cannot be undone.</p>
+      </div>
+    </div>
+
+    <div style="background:var(--red-bg);border:1px solid var(--red-border);border-radius:var(--radius-sm);
+                padding:.85rem 1rem;margin-bottom:1.5rem;">
+      <p style="font-size:.88rem;color:var(--text-1);">
+        You are about to permanently delete the account:
+      </p>
+      <p style="font-family:'JetBrains Mono',monospace;font-size:1rem;color:var(--red);
+                margin-top:.4rem;font-weight:600;">{{ target.username }}</p>
+      <p class="small" style="margin-top:.35rem;">
+        All credentials and vulnerability reports owned by this user will also be deleted.
+      </p>
+    </div>
+
+    <form method="post" style="display:flex;gap:.75rem;">
+      {% csrf_token %}
+      <a href="{% url 'admin_user_list' %}" class="btn btn-ghost" style="flex:1;">Cancel</a>
+      <button type="submit" class="btn btn-danger" style="flex:1;">Delete Account</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -5,8 +5,10 @@
 # Claude Code local settings
 .claude/
 
-# Admin credentials file
-Admin*
+# Admin credentials file (but NOT HTML templates)
+Admin*.txt
+Admin*.json
+Admin*.csv
 
 # Database
 db.sqlite3

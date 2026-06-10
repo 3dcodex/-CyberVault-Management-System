@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+{% block title %}User Management — CyberVault{% endblock %}
+{% block page_title %}User Management{% endblock %}
+
+{% block content %}
+<div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:1.75rem;">
+  <div>
+    <h2 class="page-title" style="margin-bottom:.25rem;">User Management</h2>
+    <p class="small">Manage accounts, status, and permissions.</p>
+  </div>
+</div>
+
+<!-- Stats row -->
+<div class="stat-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:1.75rem;">
+  <div class="stat-card">
+    <div class="stat-icon accent">&#128101;</div>
+    <div>
+      <div class="stat-number">{{ total_count }}</div>
+      <div class="stat-label">Total Users</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon green">&#10003;</div>
+    <div>
+      <div class="stat-number">{{ active_count }}</div>
+      <div class="stat-label">Active</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon red">&#8212;</div>
+    <div>
+      <div class="stat-number">{{ inactive_count }}</div>
+      <div class="stat-label">Inactive</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon purple">&#9881;</div>
+    <div>
+      <div class="stat-number">{{ staff_count }}</div>
+      <div class="stat-label">Staff</div>
+    </div>
+  </div>
+</div>
+
+<!-- Filters -->
+<div class="card" style="margin-bottom:1.25rem;padding:1rem 1.25rem;">
+  <form method="get" style="display:flex;gap:.75rem;align-items:center;flex-wrap:wrap;">
+    <input type="text" name="q" value="{{ search }}" placeholder="Search username or email…"
+           style="flex:1;min-width:200px;max-width:340px;">
+    <select name="status" style="width:160px;">
+      <option value="">All statuses</option>
+      <option value="active"   {% if status_filter == 'active'   %}selected{% endif %}>Active</option>
+      <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>Inactive</option>
+      <option value="staff"    {% if status_filter == 'staff'    %}selected{% endif %}>Staff</option>
+    </select>
+    <button type="submit" class="btn btn-primary btn-sm">Filter</button>
+    {% if search or status_filter %}
+    <a href="{% url 'admin_user_list' %}" class="btn btn-ghost btn-sm">Clear</a>
+    {% endif %}
+  </form>
+</div>
+
+<!-- User table -->
+<div class="card" style="padding:0;overflow:hidden;">
+  {% if users %}
+  <table>
+    <thead>
+      <tr>
+        <th>User</th>
+        <th>Email</th>
+        <th>Role</th>
+        <th>Status</th>
+        <th style="text-align:right;">Creds</th>
+        <th style="text-align:right;">Reports</th>
+        <th>Joined</th>
+        <th style="text-align:center;">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for u in users %}
+      <tr>
+        <td>
+          <div style="display:flex;align-items:center;gap:.65rem;">
+            <div class="user-avatar-sm" style="width:28px;height:28px;font-size:.7rem;">{{ u.username|first }}</div>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:.82rem;">{{ u.username }}</span>
+          </div>
+        </td>
+        <td class="text-muted" style="font-size:.82rem;">{{ u.email|default:"—" }}</td>
+        <td>
+          {% if u.is_superuser %}
+            <span class="badge badge-purple">SUPER</span>
+          {% elif u.is_staff %}
+            <span class="badge badge-blue">STAFF</span>
+          {% else %}
+            <span class="badge badge-grey">MEMBER</span>
+          {% endif %}
+        </td>
+        <td>
+          {% if u.is_active %}
+            <span class="badge badge-green">Active</span>
+          {% else %}
+            <span class="badge badge-red">Inactive</span>
+          {% endif %}
+        </td>
+        <td style="text-align:right;font-family:'JetBrains Mono',monospace;font-size:.82rem;">{{ u.credential_count }}</td>
+        <td style="text-align:right;font-family:'JetBrains Mono',monospace;font-size:.82rem;">{{ u.report_count }}</td>
+        <td class="text-muted" style="font-size:.78rem;">{{ u.date_joined|date:"Y-m-d" }}</td>
+        <td style="text-align:center;">
+          <div style="display:flex;gap:.4rem;justify-content:center;">
+            {% if u != request.user %}
+            <form method="post" action="{% url 'admin_toggle_user' u.pk %}" style="margin:0;">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-sm {% if u.is_active %}btn-ghost{% else %}btn-blue{% endif %}"
+                      title="{% if u.is_active %}Deactivate{% else %}Activate{% endif %}">
+                {% if u.is_active %}Deactivate{% else %}Activate{% endif %}
+              </button>
+            </form>
+            <a href="{% url 'admin_delete_user' u.pk %}" class="btn btn-danger btn-sm">Delete</a>
+            {% else %}
+            <span class="text-muted" style="font-size:.75rem;font-family:'JetBrains Mono',monospace;">you</span>
+            {% endif %}
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div style="padding:3rem;text-align:center;color:var(--text-2);">
+    <div style="font-size:2rem;margin-bottom:.75rem;">&#128101;</div>
+    <p>No users found{% if search %} for "{{ search }}"{% endif %}.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
