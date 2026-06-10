@@ -23,9 +23,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY')
 DEBUG = config('DEBUG', default=False, cast=bool)
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='127.0.0.1,localhost', cast=Csv())
+
+# Auto-include Railway's public domain so CSRF works without manual config.
+# RAILWAY_PUBLIC_DOMAIN is injected automatically by Railway into every deployment.
+_railway_domain = config('RAILWAY_PUBLIC_DOMAIN', default=None)
+_default_csrf = 'http://127.0.0.1,http://localhost'
+if _railway_domain:
+    _default_csrf += f',https://{_railway_domain}'
+
 CSRF_TRUSTED_ORIGINS = config(
     'CSRF_TRUSTED_ORIGINS',
-    default='http://127.0.0.1,http://localhost',
+    default=_default_csrf,
     cast=Csv(),
 )
 
